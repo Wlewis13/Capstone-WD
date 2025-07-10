@@ -1,0 +1,12 @@
+#I first wanted to weather dashboard with weekly forecast, allergen panel and a panel that display the 
+time for sunrise and sun set.
+So most of my original code is based on the weather dashboard.
+#I then added a panel that displays the current time and date, and a panel that displays the current temperature.
+#I also added a panel that displays the current weather condition.  
+#Could get the allergen api because for one site i need to work for an orzanization and enter work email
+and google wanted a credit card on file which i did not want to do.
+So i decided to scrape the allergen feature from the weather dashboard.
+
+I know the instuctors had veru specific requirements for the project, but I had to first have all my code together
+in one place before I could start to refactor it, i had to get the basics to work first.
+I need to see it working as a whole before I could start to refactor it, i needed that win lol.
