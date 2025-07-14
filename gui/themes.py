@@ -1,5 +1,6 @@
 import tkinter as tk  # Import Tkinter for GUI components
 from PIL import Image, ImageTk, ImageSequence  # Import PIL modules for handling images and animated GIFs
+import io, requests
 
 # Set the window background animation/theme based on the weather description
 def set_background_theme(root, description):
@@ -38,6 +39,7 @@ def play_gif(root, gif_file):
             root.background_label.image = frame  # Keep reference to avoid garbage collection
             # Schedule next frame update after 100 milliseconds, looping back to frame 0 after the last frame
             root.after(100, update, (index + 1) % len(frames))
+            
 
         update(0)  # Start the animation with the first frame
     except Exception as e:

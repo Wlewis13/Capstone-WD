@@ -14,7 +14,7 @@ from gui.themes import set_background_theme  # Function to set background animat
 class WeatherApp:
     def __init__(self):
         self.root = tk.Tk()  # Create main window
-        self.root.title("Weather Dashboard by King Cass")  # Set window title
+        self.root.title("Weather Dashboard by Wendell Lewis")  # Set window title
         self.root.geometry("1200x700")  # Set fixed window size
 
         self.setup_ui()  # Build the UI components
@@ -25,11 +25,11 @@ class WeatherApp:
         input_frame.pack(pady=10)  # Add padding above and below
 
         # Dropdown to select view mode: Select a City, One City, or Two Cities
-        self.view_mode = tk.StringVar(value="Select a City")  # Initial dropdown value
+        self.view_mode = tk.StringVar(value="Select an Option")  # Initial dropdown value
         mode_menu = ttk.Combobox(
             input_frame,
             textvariable=self.view_mode,
-            values=["Select a City", "One City","Two Cities"],  # Dropdown options
+            values=["Select an Option", "One City","Two Cities"],  # Dropdown options
             width=15,
             state="readonly",  # User can only select, not type
         )
@@ -56,7 +56,7 @@ class WeatherApp:
     def toggle_city_inputs(self, event=None):
         if self.view_mode.get() == "Two Cities":
             self.city2_entry.grid()  # Show second city input
-        elif self.view_mode.get() in ["One City", "Select a City"]:
+        elif self.view_mode.get() in ["One City", "Select an Option"]:
             self.city2_entry.grid_remove()  # Hide second city input
             self.city2_entry.delete(0, tk.END)  # Clear second city input field
 
@@ -85,7 +85,7 @@ class WeatherApp:
                 panel = tk.Frame(self.result_frame, bd=2, relief="groove", width=1150, bg="#ffffff")
                 panel.pack(padx=10, pady=10, fill="x")  # Fill horizontally with padding
                 populate_weather_panel(panel, city1, data1)  # Fill panel with city1 weather info
-                display_weekly_forecast(self.result_frame, data1["forecast"])  # Show 7-day forecast
+                display_weekly_forecast(self.result_frame, data1["forecast"])  # Show 5-day forecast
 
             else:
                 # For "Select a City" or "Two Cities" mode, show smaller panel with horizontal forecast
@@ -110,7 +110,7 @@ class WeatherApp:
 
         except Exception as e:
             # Show error if API call fails or data is invalid
-            messagebox.showerror("Error", "Failed to fetch weather data. Please check the city names and try again.")
+            messagebox.showerror("Error", "Please check the city names and try again.")
 
     # Start the Tkinter event loop to run the app
     def run(self):
