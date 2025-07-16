@@ -1,4 +1,5 @@
 import tkinter as tk  # Import Tkinter for GUI components
+from core.file_export import save_weather_to_csv
 from tkinter import ttk, messagebox  # Import themed widgets and message boxes
 from core.api_client import fetch_weather_data  # Function to fetch weather info from API
 from core.weather_data import process_weather_and_forecast  # Process raw API data into usable form
@@ -47,6 +48,11 @@ class WeatherApp:
         tk.Button(input_frame, text="View Weather", command=self.view_weather).grid(
             row=0, column=3, padx=10
         )
+
+        tk.Button(input_frame, text="Save CSV", command=self.save_to_csv).grid(
+        row=0, column=4, padx=10
+        )  # Button to save weather data to CSV
+
 
         # Frame to show the weather results, fills available space
         self.result_frame = tk.Frame(self.root, bg="lightblue", bd=2, relief="groove")
@@ -110,7 +116,26 @@ class WeatherApp:
 
         except Exception as e:
             # Show error if API call fails or data is invalid
-            messagebox.showerror("Error", "Please check the city names and try again.")
+            messagebox.showerror("Error", "Please check spelling and try again.")
+    def save_to_csv(self):
+        city = self.city1_entry.get().strip()
+
+        if not city:
+            messagebox.showwarning("Input Error", "Please enter a city first.")
+            return
+
+        try:
+            # Fetch and process the weather data again
+            weather, forecast = fetch_weather_data(city)
+            data = process_weather_and_forecast(weather, forecast)
+
+            # Save to CSV
+            file_path = save_weather_to_csv(city, data)
+
+            # Let the user know it worked
+            messagebox.showinfo("Success", f"Weather data saved to:\n{file_path}")
+        except Exception:
+            messagebox.showerror("Error", "Weather data failed to dave.")
 
     # Start the Tkinter event loop to run the app
     def run(self):
