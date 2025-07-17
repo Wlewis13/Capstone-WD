@@ -1,0 +1,1 @@
+from gui.components import display_horizontal_forecast
