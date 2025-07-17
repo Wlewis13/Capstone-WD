@@ -1,4 +1,7 @@
 import tkinter as tk  # Import Tkinter for GUI components
+from datetime import datetime  # Import datetime for date formatting
+import matplotlib.pyplot as plt  # Import matplotlib for plotting graphs
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg  # Import to embed matplotlib in Tkinter
 from core.file_export import save_weather_to_csv
 from tkinter import ttk, messagebox  # Import themed widgets and message boxes
 from core.api_client import fetch_weather_data  # Function to fetch weather info from API
@@ -19,6 +22,21 @@ class WeatherApp:
         self.root.geometry("1200x700")  # Set fixed window size
 
         self.setup_ui()  # Build the UI components
+
+    def view_weather(self):
+        print("View weather function not yet implemented.")
+    
+
+    def toggle_city_inputs(self, event=None):
+        if self.view_mode.get() == "Two Cities":
+            self.city2_entry.grid()
+        else:
+            self.city2_entry.grid_remove()
+            self.city2_entry.delete(0, tk.END)
+
+    def save_to_csv(self):
+        print("Save to CSV function not yet implemented.")        
+
 
     # Setup the main user interface elements
     def setup_ui(self):
@@ -57,6 +75,42 @@ class WeatherApp:
         # Frame to show the weather results, fills available space
         self.result_frame = tk.Frame(self.root, bg="lightblue", bd=2, relief="groove")
         self.result_frame.pack(fill="both", expand=True)
+
+
+    def display_comparison_graph(self, data1, data2, city1, city2):
+        categories = ["Temp (°F)", "Humidity (%)", "Sunrise", "Sunset"]
+
+        values1 = [
+            data1["temp"],
+            data1["humidity"],
+            int(datetime.fromtimestamp(data1["sunrise"]).strftime('%H')),
+            int(datetime.fromtimestamp(data1["sunset"]).strftime('%H'))
+        ]
+        values2 = [
+            data2["temp"],
+            data2["humidity"],
+            int(datetime.fromtimestamp(data2["sunrise"]).strftime('%H')),
+            int(datetime.fromtimestamp(data2["sunset"]).strftime('%H'))
+        ]
+
+        x = range(len(categories))
+
+        fig, ax = plt.subplots(figsize=(6, 3))
+        ax.bar([i - 0.2 for i in x], values1, width=0.4, label=city1, color='skyblue')
+        ax.bar([i + 0.2 for i in x], values2, width=0.4, label=city2, color='orange')
+
+        ax.set_xticks(x)
+        ax.set_xticklabels(categories)
+        ax.set_title("City Comparison")
+        ax.legend()
+        ax.grid(True, axis='y')
+
+        chart_frame = tk.Frame(self.result_frame, bg="white")
+        chart_frame.grid(row=1, column=0, columnspan=2)
+
+        chart = FigureCanvasTkAgg(fig, chart_frame)
+        chart.get_tk_widget().pack()
+
 
     # Show or hide second city input based on dropdown selection
     def toggle_city_inputs(self, event=None):
@@ -136,6 +190,36 @@ class WeatherApp:
             messagebox.showinfo("Success", f"Weather data saved to:\n{file_path}")
         except Exception:
             messagebox.showerror("Error", "Weather data failed to dave.")
+
+    def display_city_weather(self, city, column):
+        ...
+        self.populate_weather_panel(panel, city, weather, forecast)
+
+        return {
+        "temp": weather["main"]["temp"],
+        "humidity": weather["main"]["humidity"],
+        "sunrise": weather["sys"]["sunrise"],
+        "sunset": weather["sys"]["sunset"]
+    }
+
+    def compare_weather(self):
+        city1 = self.city1_entry.get().strip()
+        city2 = self.city2_entry.get().strip()
+
+        if not city1 or not city2:
+            messagebox.showwarning("Input Error", "Please enter both cities.")
+            return
+
+        self.result_frame.destroy()
+        self.result_frame = tk.Frame(self.root, bg="white")
+        self.result_frame.pack(fill="both", expand=True)
+
+        data1 = self.display_city_weather(city1, 0)
+        data2 = self.display_city_weather(city2, 1)
+
+        self.display_comparison_graph(data1, data2, self.result_frame)
+        
+        
 
     # Start the Tkinter event loop to run the app
     def run(self):

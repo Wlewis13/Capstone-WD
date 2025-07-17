@@ -1,0 +1,44 @@
+City,Temperature (F),Humidity (%),Condition,Sunrise,Sunset
+denver,74.32,61,Overcast clouds,07:45 AM,10:26 PM
+
+Date,Time,Temp (F),Condition
+2025-07-17,03:00:00,72.93,light rain
+2025-07-17,06:00:00,66.04,overcast clouds
+2025-07-17,09:00:00,61.38,broken clouds
+2025-07-17,12:00:00,59.61,broken clouds
+2025-07-17,15:00:00,69.1,overcast clouds
+2025-07-17,18:00:00,80.78,overcast clouds
+2025-07-17,21:00:00,77.02,light rain
+2025-07-18,00:00:00,82,overcast clouds
+2025-07-18,03:00:00,73.63,overcast clouds
+2025-07-18,06:00:00,73.11,overcast clouds
+2025-07-18,09:00:00,71.31,broken clouds
+2025-07-18,12:00:00,70.27,broken clouds
+2025-07-18,15:00:00,80.31,scattered clouds
+2025-07-18,18:00:00,91.38,scattered clouds
+2025-07-18,21:00:00,95.27,broken clouds
+2025-07-19,00:00:00,89.96,broken clouds
+2025-07-19,03:00:00,74.64,light rain
+2025-07-19,06:00:00,73.45,light rain
+2025-07-19,09:00:00,71.73,broken clouds
+2025-07-19,12:00:00,70.84,broken clouds
+2025-07-19,15:00:00,79.07,overcast clouds
+2025-07-19,18:00:00,92.01,overcast clouds
+2025-07-19,21:00:00,91.63,overcast clouds
+2025-07-20,00:00:00,88.32,overcast clouds
+2025-07-20,03:00:00,81.52,broken clouds
+2025-07-20,06:00:00,78.03,broken clouds
+2025-07-20,09:00:00,74.84,scattered clouds
+2025-07-20,12:00:00,72.5,scattered clouds
+2025-07-20,15:00:00,81.81,overcast clouds
+2025-07-20,18:00:00,93.42,broken clouds
+2025-07-20,21:00:00,93.02,scattered clouds
+2025-07-21,00:00:00,88.9,light rain
+2025-07-21,03:00:00,81.28,broken clouds
+2025-07-21,06:00:00,77.95,light rain
+2025-07-21,09:00:00,74.7,clear sky
+2025-07-21,12:00:00,72.68,clear sky
+2025-07-21,15:00:00,83.79,scattered clouds
+2025-07-21,18:00:00,93.81,scattered clouds
+2025-07-21,21:00:00,98.92,scattered clouds
+2025-07-22,00:00:00,93.51,broken clouds
