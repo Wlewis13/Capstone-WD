@@ -1,31 +1,78 @@
-import tkinter as tk  # Import Tkinter for GUI components
-from datetime import datetime  # Import datetime for date formatting
-import matplotlib.pyplot as plt  # Import matplotlib for plotting graphs
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg  # Import to embed matplotlib in Tkinter
+import tkinter as tk
+from tkinter import ttk, messagebox, Toplevel
+from PIL import Image, ImageTk, ImageSequence
+from datetime import datetime
+import threading
+import math
+import calendar
+
+from core.api_client import fetch_weather_data
+from core.weather_data import process_weather_and_forecast
 from core.file_export import save_weather_to_csv
-from tkinter import ttk, messagebox  # Import themed widgets and message boxes
-from core.api_client import fetch_weather_data  # Function to fetch weather info from API
-from core.weather_data import process_weather_and_forecast  # Process raw API data into usable form
-from gui.components import (  # Import GUI helper functions to build the interface
+from gui.components import (
     populate_weather_panel,
     display_weekly_forecast,
-    display_horizontal_forecast,
-    display_allergen_icons,
+    display_horizontal_forecast
 )
-from gui.themes import set_background_theme  # Function to set background animation/theme based on weather
+from gui.themes import set_background_theme
 
-# Main application class for the weather dashboard
+NAVY_BLUE = "#000080"
+WHITE = "#ffffff"
+
 class WeatherApp:
     def __init__(self):
-        self.root = tk.Tk()  # Create main window
-        self.root.title("Weather Dashboard by Wendell Lewis")  # Set window title
-        self.root.geometry("1200x700")  # Set fixed window size
+        self.root = tk.Tk()
+        self.root.title("Weather Dashboard by Wendell Lewis")
+        self.root.geometry("1200x700")
+        self.root.resizable(False, False)
 
-        self.setup_ui()  # Build the UI components
+        self.clock_panel = None
+        self.clock_label = None
+        self.clock_canvas = None
+        self.bg_animation = None
+        self.frames = []
 
-    def view_weather(self):
-        print("View weather function not yet implemented.")
-    
+        self.setup_ui()
+
+    def setup_ui(self):
+        self.background_label = tk.Label(self.root)
+        self.background_label.place(x=0, y=0, relwidth=1, relheight=1)
+
+        # Input frame with white bg and navy blue text
+        self.input_frame = tk.Frame(self.root, bg=WHITE, bd=2, relief="groove")
+        self.input_frame.pack(pady=10)
+
+        self.view_mode = tk.StringVar(value="Select an Option")
+        mode_menu = ttk.Combobox(
+            self.input_frame,
+            textvariable=self.view_mode,
+            values=["Select an Option", "One City", "Two Cities"],
+            width=15,
+            state="readonly",
+            foreground=NAVY_BLUE,
+            background=WHITE,
+        )
+        mode_menu.grid(row=0, column=0, padx=5)
+        mode_menu.bind("<<ComboboxSelected>>", self.toggle_city_inputs)
+
+        # Style normal tk widgets with navy text on white bg
+        entry_style = {"bg": WHITE, "fg": NAVY_BLUE, "insertbackground": NAVY_BLUE}
+        button_style = {"bg": WHITE, "fg": NAVY_BLUE, "activebackground": "#e6e6ff", "activeforeground": NAVY_BLUE, "relief": "raised"}
+
+        self.city1_entry = tk.Entry(self.input_frame, width=20, **entry_style)
+        self.city1_entry.grid(row=0, column=1, padx=5)
+
+        self.city2_entry = tk.Entry(self.input_frame, width=20, **entry_style)
+        self.city2_entry.grid(row=0, column=2, padx=5)
+        self.city2_entry.grid_remove()
+
+        tk.Button(self.input_frame, text="View Weather", command=self.view_weather, **button_style).grid(row=0, column=3, padx=10)
+        tk.Button(self.input_frame, text="Save CSV", command=self.save_to_csv, **button_style).grid(row=0, column=4, padx=10)
+        tk.Button(self.input_frame, text="🕒 Show Clock", command=self.toggle_clock_panel, **button_style).grid(row=0, column=5, padx=5)
+        tk.Button(self.input_frame, text="🌙 Moon Calendar", command=self.show_moon_calendar, **button_style).grid(row=0, column=6, padx=5)
+
+        self.result_frame = tk.Frame(self.root, bg="lightblue", bd=2, relief="groove")
+        self.result_frame.pack(fill="both", expand=True)
 
     def toggle_city_inputs(self, event=None):
         if self.view_mode.get() == "Two Cities":
@@ -34,193 +81,177 @@ class WeatherApp:
             self.city2_entry.grid_remove()
             self.city2_entry.delete(0, tk.END)
 
-    def save_to_csv(self):
-        print("Save to CSV function not yet implemented.")        
-
-
-    # Setup the main user interface elements
-    def setup_ui(self):
-        input_frame = tk.Frame(self.root, bg="lightblue", bd=2, relief="groove")  # Frame for city input controls
-        input_frame.pack(pady=10)  # Add padding above and below
-
-        # Dropdown to select view mode: Select a City, One City, or Two Cities
-        self.view_mode = tk.StringVar(value="Select an Option")  # Initial dropdown value
-        mode_menu = ttk.Combobox(
-            input_frame,
-            textvariable=self.view_mode,
-            values=["Select an Option", "One City","Two Cities"],  # Dropdown options
-            width=15,
-            state="readonly",  # User can only select, not type
-        )
-        mode_menu.grid(row=0, column=0, padx=5)  # Place dropdown in grid
-        mode_menu.bind("<<ComboboxSelected>>", self.toggle_city_inputs)  # Call toggle when selection changes
-
-        self.city1_entry = tk.Entry(input_frame, width=20)  # Text box for first city
-        self.city1_entry.grid(row=0, column=1, padx=5)  # Place next to dropdown
-
-        self.city2_entry = tk.Entry(input_frame, width=20)  # Text box for second city (hidden by default)
-        self.city2_entry.grid(row=0, column=2, padx=5)
-        self.city2_entry.grid_remove()  # Hide second city input initially
-
-        # Button to trigger weather fetch and display
-        tk.Button(input_frame, text="View Weather", command=self.view_weather).grid(
-            row=0, column=3, padx=10
-        )
-
-        tk.Button(input_frame, text="Save CSV", command=self.save_to_csv).grid(
-        row=0, column=4, padx=10
-        )  # Button to save weather data to CSV
-
-
-        # Frame to show the weather results, fills available space
-        self.result_frame = tk.Frame(self.root, bg="lightblue", bd=2, relief="groove")
-        self.result_frame.pack(fill="both", expand=True)
-
-
-    def display_comparison_graph(self, data1, data2, city1, city2):
-        categories = ["Temp (°F)", "Humidity (%)", "Sunrise", "Sunset"]
-
-        values1 = [
-            data1["temp"],
-            data1["humidity"],
-            int(datetime.fromtimestamp(data1["sunrise"]).strftime('%H')),
-            int(datetime.fromtimestamp(data1["sunset"]).strftime('%H'))
-        ]
-        values2 = [
-            data2["temp"],
-            data2["humidity"],
-            int(datetime.fromtimestamp(data2["sunrise"]).strftime('%H')),
-            int(datetime.fromtimestamp(data2["sunset"]).strftime('%H'))
-        ]
-
-        x = range(len(categories))
-
-        fig, ax = plt.subplots(figsize=(6, 3))
-        ax.bar([i - 0.2 for i in x], values1, width=0.4, label=city1, color='skyblue')
-        ax.bar([i + 0.2 for i in x], values2, width=0.4, label=city2, color='orange')
-
-        ax.set_xticks(x)
-        ax.set_xticklabels(categories)
-        ax.set_title("City Comparison")
-        ax.legend()
-        ax.grid(True, axis='y')
-
-        chart_frame = tk.Frame(self.result_frame, bg="white")
-        chart_frame.grid(row=1, column=0, columnspan=2)
-
-        chart = FigureCanvasTkAgg(fig, chart_frame)
-        chart.get_tk_widget().pack()
-
-
-    # Show or hide second city input based on dropdown selection
-    def toggle_city_inputs(self, event=None):
-        if self.view_mode.get() == "Two Cities":
-            self.city2_entry.grid()  # Show second city input
-        elif self.view_mode.get() in ["One City", "Select an Option"]:
-            self.city2_entry.grid_remove()  # Hide second city input
-            self.city2_entry.delete(0, tk.END)  # Clear second city input field
-
-    # Fetch and display weather data based on user input
     def view_weather(self):
-        # Clear any previous weather results from the result frame
         for widget in self.result_frame.winfo_children():
             widget.destroy()
 
-        city1 = self.city1_entry.get().strip()  # Get and trim city1 input
-        city2 = self.city2_entry.get().strip()  # Get and trim city2 input (may be empty)
+        city1 = self.city1_entry.get().strip()
+        city2 = self.city2_entry.get().strip()
 
         if not city1:
-            messagebox.showwarning("Input Error", "Please enter at least one city.")  # Warn if city1 is empty
+            messagebox.showwarning("Input Error", "Please enter at least one city.")
             return
 
         try:
-            # Fetch weather and forecast data for city1
             weather1, forecast1 = fetch_weather_data(city1)
             data1 = process_weather_and_forecast(weather1, forecast1)
-            # Change background theme based on city1 weather description
-            set_background_theme(self.root, data1["description"])
 
-            # If viewing one city, display full-width panel with weekly forecast
+            self.set_time_based_background(data1["description"])
+
             if self.view_mode.get() == "One City":
                 panel = tk.Frame(self.result_frame, bd=2, relief="groove", width=1150, bg="#ffffff")
-                panel.pack(padx=10, pady=10, fill="x")  # Fill horizontally with padding
-                populate_weather_panel(panel, city1, data1)  # Fill panel with city1 weather info
-                display_weekly_forecast(self.result_frame, data1["forecast"])  # Show 5-day forecast
-
+                panel.pack(padx=10, pady=10, fill="x")
+                populate_weather_panel(panel, city1, data1)
+                display_weekly_forecast(self.result_frame, data1["forecast"])
             else:
-                # For "Select a City" or "Two Cities" mode, show smaller panel with horizontal forecast
                 panel = tk.Frame(self.result_frame, bd=2, relief="groove", width=550, bg="#ffffff")
                 panel.grid(row=0, column=0, padx=10, pady=10, sticky="n")
                 populate_weather_panel(panel, city1, data1)
                 display_horizontal_forecast(panel, data1["forecast"])
 
-            # If viewing two cities, validate and fetch data for city2 as well
             if self.view_mode.get() == "Two Cities":
                 if not city2:
-                    messagebox.showwarning("Input Error", "Please enter the second city.")  # Warn if city2 missing
+                    messagebox.showwarning("Input Error", "Please enter the second city.")
                     return
                 weather2, forecast2 = fetch_weather_data(city2)
                 data2 = process_weather_and_forecast(weather2, forecast2)
 
-                # Display city2 info side-by-side with city1
                 panel2 = tk.Frame(self.result_frame, bd=2, relief="groove", width=550, bg="#ffffff")
                 panel2.grid(row=0, column=1, padx=10, pady=10, sticky="n")
                 populate_weather_panel(panel2, city2, data2)
                 display_horizontal_forecast(panel2, data2["forecast"])
-
         except Exception as e:
-            # Show error if API call fails or data is invalid
             messagebox.showerror("Error", "Please check spelling and try again.")
+
     def save_to_csv(self):
         city = self.city1_entry.get().strip()
-
         if not city:
             messagebox.showwarning("Input Error", "Please enter a city first.")
             return
-
         try:
-            # Fetch and process the weather data again
             weather, forecast = fetch_weather_data(city)
             data = process_weather_and_forecast(weather, forecast)
-
-            # Save to CSV
             file_path = save_weather_to_csv(city, data)
-
-            # Let the user know it worked
             messagebox.showinfo("Success", f"Weather data saved to:\n{file_path}")
         except Exception:
-            messagebox.showerror("Error", "Weather data failed to dave.")
+            messagebox.showerror("Error", "Weather data failed to save.")
 
-    def display_city_weather(self, city, column):
-        ...
-        self.populate_weather_panel(panel, city, weather, forecast)
+    def toggle_clock_panel(self):
+        if self.clock_panel and self.clock_panel.winfo_exists():
+            self.clock_panel.destroy()
+            self.clock_panel = None
+        else:
+            self.clock_panel = tk.Frame(self.result_frame, bg="black", width=200, height=200)
+            self.clock_panel.place(x=950, y=10)
+            self.clock_canvas = tk.Canvas(self.clock_panel, width=180, height=180, bg="black", highlightthickness=0)
+            self.clock_canvas.pack()
+            self.clock_label = tk.Label(self.clock_panel, text="", bg="black", fg="white", font=("Arial", 10))
+            self.clock_label.pack()
+            self.update_clock()
 
-        return {
-        "temp": weather["main"]["temp"],
-        "humidity": weather["main"]["humidity"],
-        "sunrise": weather["sys"]["sunrise"],
-        "sunset": weather["sys"]["sunset"]
-    }
-
-    def compare_weather(self):
-        city1 = self.city1_entry.get().strip()
-        city2 = self.city2_entry.get().strip()
-
-        if not city1 or not city2:
-            messagebox.showwarning("Input Error", "Please enter both cities.")
+    def update_clock(self):
+        if not self.clock_canvas:
             return
 
-        self.result_frame.destroy()
-        self.result_frame = tk.Frame(self.root, bg="white")
-        self.result_frame.pack(fill="both", expand=True)
+        now = datetime.now()
+        self.clock_canvas.delete("all")
+        self.clock_canvas.create_oval(10, 10, 170, 170, fill="white", outline="")
 
-        data1 = self.display_city_weather(city1, 0)
-        data2 = self.display_city_weather(city2, 1)
+        for hour in range(1, 13):
+            angle = math.radians((hour * 30) - 90)
+            x = 90 + 70 * math.cos(angle)
+            y = 90 + 70 * math.sin(angle)
+            self.clock_canvas.create_text(x, y, text=str(hour), fill="black", font=("Arial", 8, "bold"))
 
-        self.display_comparison_graph(data1, data2, self.result_frame)
-        
-        
+        sec = now.second
+        min = now.minute
+        hour = now.hour % 12
 
-    # Start the Tkinter event loop to run the app
+        def angle(length, unit, scale):
+            rad = math.radians((unit * 6 if scale == 60 else unit * 30) - 90)
+            return 90 + length * math.cos(rad), 90 + length * math.sin(rad)
+
+        sx, sy = angle(60, sec, 60)
+        mx, my = angle(50, min, 60)
+        hx, hy = angle(40, hour + min / 60, 12)
+
+        self.clock_canvas.create_line(90, 90, sx, sy, fill="red", width=1)
+        self.clock_canvas.create_line(90, 90, mx, my, fill="blue", width=2)
+        self.clock_canvas.create_line(90, 90, hx, hy, fill="black", width=4)
+
+        self.clock_label.config(text=now.strftime("%A %I:%M:%S %p"))
+        self.clock_panel.after(1000, self.update_clock)
+
+    def set_time_based_background(self, desc):
+        desc = desc.lower()
+        hour = datetime.now().hour
+        is_night = hour < 6 or hour >= 18
+
+        if "rain" in desc:
+            bg_file = "assets/backgrounds/rain_night.gif" if is_night else "assets/backgrounds/rain.gif"
+        elif "cloud" in desc:
+            bg_file = "assets/backgrounds/clouds_night.gif" if is_night else "assets/backgrounds/clouds.gif"
+        elif "sun" in desc or "clear" in desc:
+            bg_file = "assets/backgrounds/night_clear.gif" if is_night else "assets/backgrounds/clear.gif"
+        else:
+            bg_file = "assets/backgrounds/default.gif"
+
+        try:
+            gif = Image.open(bg_file)
+            self.frames = [ImageTk.PhotoImage(f.copy().convert("RGBA")) for f in ImageSequence.Iterator(gif)]
+            self.animate_background(0)
+        except Exception:
+            pass
+
+    def animate_background(self, index):
+        if not self.frames:
+            return
+        self.background_label.config(image=self.frames[index])
+        self.root.after(100, lambda: self.animate_background((index + 1) % len(self.frames)))
+
+    def show_moon_calendar(self):
+        cal_win = Toplevel(self.root)
+        cal_win.title("Moon Phase Calendar")
+        cal_win.geometry("400x400")
+        cal_win.config(bg=WHITE)
+
+        now = datetime.now()
+        year = now.year
+        month = now.month
+
+        cal = calendar.monthcalendar(year, month)
+
+        header = tk.Label(cal_win, text=f"{calendar.month_name[month]} {year}", font=("Arial", 16, "bold"), fg=NAVY_BLUE, bg=WHITE)
+        header.pack(pady=10)
+
+        days_frame = tk.Frame(cal_win, bg=WHITE)
+        days_frame.pack()
+        for day in ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]:
+            lbl = tk.Label(days_frame, text=day, width=5, font=("Arial", 10, "bold"), fg=NAVY_BLUE, bg=WHITE)
+            lbl.pack(side="left")
+
+        dates_frame = tk.Frame(cal_win, bg=WHITE)
+        dates_frame.pack()
+
+        def moon_phase(date):
+            diff = date - datetime(2001, 1, 1)
+            days = diff.days + (diff.seconds / 86400)
+            lunations = 0.20439731 + (days * 0.03386319269)
+            phase_index = int((lunations % 1) * 8 + 0.5) % 8
+            phases = ["🌑", "🌒", "🌓", "🌔", "🌕", "🌖", "🌗", "🌘"]
+            return phases[phase_index]
+
+        for week in cal:
+            week_frame = tk.Frame(dates_frame, bg=WHITE)
+            week_frame.pack()
+            for day in week:
+                if day == 0:
+                    lbl = tk.Label(week_frame, text="", width=5, height=2, bg=WHITE)
+                else:
+                    date_obj = datetime(year, month, day)
+                    phase = moon_phase(date_obj)
+                    lbl = tk.Label(week_frame, text=f"{day}\n{phase}", width=5, height=2, font=("Arial", 10), fg=NAVY_BLUE, bg=WHITE)
+                lbl.pack(side="left")
+
     def run(self):
         self.root.mainloop()
