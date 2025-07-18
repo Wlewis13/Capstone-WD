@@ -7,7 +7,6 @@ from PIL import Image, ImageTk
 import requests
 from io import BytesIO
 
-# Function to determine background color based on weather description
 def get_day_background(desc):
     desc = desc.lower()
     if "rain" in desc:
@@ -23,15 +22,11 @@ def get_day_background(desc):
     else:
         return "#ffffff"
 
-# Populates a weather panel with detailed weather data
 def populate_weather_panel(panel, city, data):
     bg_color = get_day_background(data['description'])
     panel.configure(bg=bg_color)
 
-    # City name
     tk.Label(panel, text=f"{city}", font=("Arial", 16, "bold"), bg=bg_color, fg="navy").pack(pady=5)
-
-    # Weather icon
     icon_url = f"http://openweathermap.org/img/wn/{data['icon']}@2x.png"
     icon_img = fetch_icon(icon_url)
     if icon_img:
@@ -39,7 +34,6 @@ def populate_weather_panel(panel, city, data):
         lbl.image = icon_img
         lbl.pack()
 
-    # Weather details
     tk.Label(panel, text=f"Temperature: {data['temperature']}°F", font=("Arial", 12), bg=bg_color, fg="navy").pack()
     tk.Label(panel, text=f"Condition: {data['description']}", font=("Arial", 12), bg=bg_color, fg="navy").pack()
     tk.Label(panel, text=f"Humidity: {data['humidity']}%", font=("Arial", 12), bg=bg_color, fg="navy").pack()
@@ -48,7 +42,6 @@ def populate_weather_panel(panel, city, data):
 
     display_allergen_icons(panel, bg_color)
 
-# Displays pollen and dust allergen icons
 def display_allergen_icons(panel, bg_color="#ffffff"):
     allergens = [("Pollen", "assets/icons/pollen.png"), ("Dust", "assets/icons/dust.png")]
     row = tk.Frame(panel, bg=bg_color)
@@ -64,35 +57,32 @@ def display_allergen_icons(panel, bg_color="#ffffff"):
         except:
             tk.Label(row, text=f"{name}: Low", fg="green", bg=bg_color).pack(side="left", padx=10)
 
-# Displays the weekly forecast panel with scrollbars and toggle graph
 def display_weekly_forecast(parent_frame, forecast_data):
     outer_frame = tk.Frame(parent_frame, bg="white")
     outer_frame.pack(fill="both", expand=True, pady=10)
 
-    # Canvas with vertical and horizontal scrollbars
     canvas = tk.Canvas(outer_frame, bg="white")
     v_scrollbar = tk.Scrollbar(outer_frame, orient="vertical", command=canvas.yview)
-    h_scrollbar = tk.Scrollbar(outer_frame, orient="horizontal", command=canvas.xview)
     scrollable_frame = tk.Frame(canvas, bg="white")
 
-    scrollable_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
-    canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+    def on_frame_configure(event):
+        canvas.configure(scrollregion=canvas.bbox("all"))
 
-    canvas.configure(yscrollcommand=v_scrollbar.set, xscrollcommand=h_scrollbar.set)
+    scrollable_frame.bind("<Configure>", on_frame_configure)
+    canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+    canvas.configure(yscrollcommand=v_scrollbar.set)
+
     canvas.pack(side="left", fill="both", expand=True)
     v_scrollbar.pack(side="right", fill="y")
-    h_scrollbar.pack(side="bottom", fill="x")
 
-    # Title
     tk.Label(scrollable_frame, text="5-Day Forecast", font=("Arial", 14, "bold"), bg="white", fg="navy").pack(padx=10, pady=5)
 
-    # Frame for daily panels
     day_frame = tk.Frame(scrollable_frame, bg="white")
-    day_frame.pack()
+    day_frame.pack(anchor="center")
 
-    daily_data = []  # Data for graph
+    daily_data = []
 
-    for i in range(0, 40, 8):  # One forecast per day (every 8 time points)
+    for i in range(0, 40, 8):
         day = forecast_data["list"][i]
         date = day["dt_txt"].split(" ")[0]
         temp = int(day["main"]["temp"])
@@ -108,7 +98,6 @@ def display_weekly_forecast(parent_frame, forecast_data):
         panel.pack_propagate(0)
         panel.pack(side="left", padx=10, pady=10)
 
-        # Date, icon, temp, description
         tk.Label(panel, text=date[-5:], font=("Arial", 10, "bold"), bg=bg, fg="navy").pack()
         if icon_img:
             lbl = tk.Label(panel, image=icon_img, bg=bg)
@@ -117,7 +106,6 @@ def display_weekly_forecast(parent_frame, forecast_data):
         tk.Label(panel, text=f"{temp}°F", font=("Arial", 10), bg=bg, fg="navy").pack()
         tk.Label(panel, text=desc, font=("Arial", 9), bg=bg, fg="navy", wraplength=100).pack()
 
-    # Graph toggle button and holder
     graph_frame = tk.Frame(scrollable_frame, bg="white")
     graph_frame.pack(pady=10)
     graph_canvas = None
@@ -138,7 +126,6 @@ def display_weekly_forecast(parent_frame, forecast_data):
     toggle_btn = tk.Button(graph_frame, text="Show Forecast Graph", command=toggle_graph)
     toggle_btn.pack()
 
-# Renders the temperature forecast graph with icons
 def show_forecast_graph(parent, daily_data):
     dates = [d[0] for d in daily_data]
     temps = [d[1] for d in daily_data]
@@ -147,7 +134,6 @@ def show_forecast_graph(parent, daily_data):
 
     fig, ax = plt.subplots(figsize=(6, 3))
 
-    # Assign colors based on condition
     colors = []
     for cond in conditions:
         if "rain" in cond:
@@ -170,7 +156,6 @@ def show_forecast_graph(parent, daily_data):
             ax.add_artist(ab)
         except:
             pass
-        # Temperature label in navy
         ax.text(date, temp - 2, f"{temp}°F", ha="center", fontsize=8, color="navy")
 
     ax.set_title("5-Day Temperature Forecast", fontsize=12, color="navy")
@@ -185,7 +170,6 @@ def show_forecast_graph(parent, daily_data):
     canvas.get_tk_widget().pack(pady=10)
     return canvas
 
-# Displays side-by-side forecast panels for comparing two cities
 def display_horizontal_forecast(panel, forecast_data):
     frame = tk.Frame(panel, bg="white")
     frame.pack(pady=10)
@@ -209,4 +193,3 @@ def display_horizontal_forecast(panel, forecast_data):
             lbl.image = icon_img
             lbl.pack()
         tk.Label(day_frame, text=f"{temp}°F", font=("Arial", 10), bg=bg, fg="navy").pack()
-
