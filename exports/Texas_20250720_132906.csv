@@ -1,0 +1,44 @@
+City,Temperature (F),Humidity (%),Condition,Sunrise,Sunset
+Texas,84.15,65,Clear sky,07:46 AM,09:40 PM
+
+Date,Time,Temp (F),Condition
+2025-07-20,18:00:00,84.15,clear sky
+2025-07-20,21:00:00,86.05,few clouds
+2025-07-21,00:00:00,85.77,broken clouds
+2025-07-21,03:00:00,81.05,overcast clouds
+2025-07-21,06:00:00,76.12,broken clouds
+2025-07-21,09:00:00,74.68,broken clouds
+2025-07-21,12:00:00,72.79,broken clouds
+2025-07-21,15:00:00,80.11,overcast clouds
+2025-07-21,18:00:00,89.46,broken clouds
+2025-07-21,21:00:00,92.46,broken clouds
+2025-07-22,00:00:00,90.52,overcast clouds
+2025-07-22,03:00:00,81.7,overcast clouds
+2025-07-22,06:00:00,77.56,broken clouds
+2025-07-22,09:00:00,74.88,broken clouds
+2025-07-22,12:00:00,72.59,broken clouds
+2025-07-22,15:00:00,79.59,overcast clouds
+2025-07-22,18:00:00,88.09,broken clouds
+2025-07-22,21:00:00,86.83,overcast clouds
+2025-07-23,00:00:00,88.48,overcast clouds
+2025-07-23,03:00:00,81.64,overcast clouds
+2025-07-23,06:00:00,81.32,overcast clouds
+2025-07-23,09:00:00,75.74,overcast clouds
+2025-07-23,12:00:00,73.26,overcast clouds
+2025-07-23,15:00:00,80.02,overcast clouds
+2025-07-23,18:00:00,87.42,broken clouds
+2025-07-23,21:00:00,93.67,overcast clouds
+2025-07-24,00:00:00,91.71,overcast clouds
+2025-07-24,03:00:00,82.6,overcast clouds
+2025-07-24,06:00:00,80.33,broken clouds
+2025-07-24,09:00:00,75.47,clear sky
+2025-07-24,12:00:00,72.77,clear sky
+2025-07-24,15:00:00,83.48,clear sky
+2025-07-24,18:00:00,93.56,clear sky
+2025-07-24,21:00:00,97.27,clear sky
+2025-07-25,00:00:00,94.87,clear sky
+2025-07-25,03:00:00,84.52,clear sky
+2025-07-25,06:00:00,80.98,clear sky
+2025-07-25,09:00:00,77.25,broken clouds
+2025-07-25,12:00:00,74.5,broken clouds
+2025-07-25,15:00:00,86.04,broken clouds
