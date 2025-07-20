@@ -38,7 +38,6 @@ class WeatherApp:
         self.background_label = tk.Label(self.root)
         self.background_label.place(x=0, y=0, relwidth=1, relheight=1)
 
-        # Input frame with white bg and navy blue text
         self.input_frame = tk.Frame(self.root, bg=WHITE, bd=2, relief="groove")
         self.input_frame.pack(pady=10)
 
@@ -55,7 +54,6 @@ class WeatherApp:
         mode_menu.grid(row=0, column=0, padx=5)
         mode_menu.bind("<<ComboboxSelected>>", self.toggle_city_inputs)
 
-        # Style normal tk widgets with navy text on white bg
         entry_style = {"bg": WHITE, "fg": NAVY_BLUE, "insertbackground": NAVY_BLUE}
         button_style = {"bg": WHITE, "fg": NAVY_BLUE, "activebackground": "#e6e6ff", "activeforeground": NAVY_BLUE, "relief": "raised"}
 
@@ -219,39 +217,50 @@ class WeatherApp:
         year = now.year
         month = now.month
 
-        cal = calendar.monthcalendar(year, month)
-
         header = tk.Label(cal_win, text=f"{calendar.month_name[month]} {year}", font=("Arial", 16, "bold"), fg=NAVY_BLUE, bg=WHITE)
         header.pack(pady=10)
 
-        days_frame = tk.Frame(cal_win, bg=WHITE)
-        days_frame.pack()
-        for day in ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]:
-            lbl = tk.Label(days_frame, text=day, width=5, font=("Arial", 10, "bold"), fg=NAVY_BLUE, bg=WHITE)
-            lbl.pack(side="left")
+        phase_frame = tk.Frame(cal_win, bg=WHITE)
+        phase_frame.pack(fill="both", expand=True)
 
-        dates_frame = tk.Frame(cal_win, bg=WHITE)
-        dates_frame.pack()
+        canvas = tk.Canvas(phase_frame, bg=WHITE, highlightthickness=0)
+        scrollbar = tk.Scrollbar(phase_frame, orient="vertical", command=canvas.yview)
+        scrollable_frame = tk.Frame(canvas, bg=WHITE)
+
+        scrollable_frame.bind(
+            "<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+        )
+
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
 
         def moon_phase(date):
             diff = date - datetime(2001, 1, 1)
             days = diff.days + (diff.seconds / 86400)
             lunations = 0.20439731 + (days * 0.03386319269)
             phase_index = int((lunations % 1) * 8 + 0.5) % 8
-            phases = ["🌑", "🌒", "🌓", "🌔", "🌕", "🌖", "🌗", "🌘"]
+            phases = [
+                ("New Moon", "🌑"),
+                ("Waxing Crescent", "🌒"),
+                ("First Quarter", "🌓"),
+                ("Waxing Gibbous", "🌔"),
+                ("Full Moon", "🌕"),
+                ("Waning Gibbous", "🌖"),
+                ("Last Quarter", "🌗"),
+                ("Waning Crescent", "🌘")
+            ]
             return phases[phase_index]
 
-        for week in cal:
-            week_frame = tk.Frame(dates_frame, bg=WHITE)
-            week_frame.pack()
-            for day in week:
-                if day == 0:
-                    lbl = tk.Label(week_frame, text="", width=5, height=2, bg=WHITE)
-                else:
-                    date_obj = datetime(year, month, day)
-                    phase = moon_phase(date_obj)
-                    lbl = tk.Label(week_frame, text=f"{day}\n{phase}", width=5, height=2, font=("Arial", 10), fg=NAVY_BLUE, bg=WHITE)
-                lbl.pack(side="left")
+        for day in range(1, calendar.monthrange(year, month)[1] + 1):
+            date_obj = datetime(year, month, day)
+            phase_name, phase_icon = moon_phase(date_obj)
+            if phase_name in ["New Moon", "First Quarter", "Full Moon", "Last Quarter"]:
+                label = tk.Label(scrollable_frame, text=f"{date_obj.strftime('%B %d, %Y')} - {phase_icon} {phase_name}",
+                                 font=("Arial", 12), fg=NAVY_BLUE, bg=WHITE, anchor="w", padx=10, pady=5)
+                label.pack(fill="x", pady=2)
 
     def run(self):
         self.root.mainloop()
