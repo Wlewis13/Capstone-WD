@@ -23,7 +23,7 @@ LIGHT_BG = WHITE
 
 ZODIAC_HOROSCOPES = {
     "Aries": "It's National Curry Goat Day, make yourself Invisible.",
-    "Taurus": "Hamburger, Cheese on Mines.",
+    "Taurus": "Burger!!!, Cheese on Mines.",
     "Gemini": "You are an undiagnosed Bi-polar Case - Seek Help!.",
     "Cancer": "You are a Crab, a Crab!!! of all things a Crab, Go blow some Bubbles.",
     "Leo": "You are just a house Cat that had steriods in their milk, Relax go Meow & Catch a Mice.",
@@ -40,7 +40,7 @@ ZODIAC_HOROSCOPES = {
 class WeatherApp:
     def __init__(self):
         self.root = tk.Tk()
-        self.root.title("Weather Dashboard by Wendell Lewis")
+        self.root.title("Weather Dashboard by Wendell Lewis, First of his Name!")
         self.root.geometry("1200x700")
         self.root.resizable(False, False)
 
