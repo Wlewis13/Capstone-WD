@@ -26,7 +26,7 @@ ZODIAC_HOROSCOPES = {
     "Taurus": "Burger!!!, Cheese on Mines.",
     "Gemini": "You are an undiagnosed Bi-polar Case - Seek Help!.",
     "Cancer": "You are a Crab, a Crab!!! of all things a Crab, Go blow some Bubbles.",
-    "Leo": "You are just a house Cat that had steriods in their milk, Relax go Meow & Catch a Mice.",
+    "Leo": "You are just a house Cat that had steriods in their milk, Relax! go Meowww or somthing.",
     "Virgo": "The Virgin, Righttttt: the lie detector determined that was a LIE!.",
     "Libra": "You are going to need alot of Meds before anyone can consider you Balanced.",
     "Scorpio": "You are a Shrimp with a stinger, that has a paralzying taste, go Detox.",
@@ -34,26 +34,18 @@ ZODIAC_HOROSCOPES = {
     "Capricorn": "Jackie Chan(Who am I?), you are a Goat with a Fish tail, pick a specie!.",
     "Pisces": "How you fall for the bait on the hook trick everytime? smarten up!.",
     "Aquarius": "Look at them, Staring at You:Yes we are who TF we say we are! Act Accordingly & Move around!!!."
-    
 }
 
 class WeatherApp:
     def __init__(self):
         self.root = tk.Tk()
-        self.root.title("Weather Dashboard by Wendell Lewis, First of his Name!")
+        self.root.title("Weather Dashboard by Wendell Lewis")
         self.root.geometry("1200x700")
         self.root.resizable(False, False)
 
-        self.clock_panel = None
-        self.clock_label = None
-        self.clock_canvas = None
-        self.bg_animation = None
         self.frames = []
-
         self.settings = {
-            "dark_mode": False,
-            "background_animation": True,
-            "default_city": ""
+            "forecast_layout": "Zoomed Out"
         }
 
         self.setup_ui()
@@ -84,9 +76,12 @@ class WeatherApp:
                 panel = tk.Frame(self.result_frame, bd=2, relief="groove", width=1150, bg="#ffffff")
                 panel.pack(padx=10, pady=10, fill="x")
                 populate_weather_panel(panel, city1, data1)
-                display_weekly_forecast(self.result_frame, data1["forecast"])
+                if self.settings["forecast_layout"] == "Zoomed In":
+                    display_horizontal_forecast(panel, data1["forecast"])
+                else:
+                    display_weekly_forecast(self.result_frame, data1["forecast"])
             else:
-                panel = tk.Frame(self.result_frame, bd=2, relief="groove", width=550, bg="#ffffff")
+                panel = tk.LabelFrame(self.result_frame, bd=2, relief="ridge", width=550, bg="#ffffff", text=f"{city1} Forecast", font=("Arial", 10, "bold"))
                 panel.grid(row=0, column=0, padx=10, pady=10, sticky="n")
                 populate_weather_panel(panel, city1, data1)
                 display_horizontal_forecast(panel, data1["forecast"])
@@ -98,7 +93,7 @@ class WeatherApp:
                 weather2, forecast2 = fetch_weather_data(city2)
                 data2 = process_weather_and_forecast(weather2, forecast2)
 
-                panel2 = tk.Frame(self.result_frame, bd=2, relief="groove", width=550, bg="#ffffff")
+                panel2 = tk.LabelFrame(self.result_frame, bd=2, relief="ridge", width=550, bg="#ffffff", text=f"{city2} Forecast", font=("Arial", 10, "bold"))
                 panel2.grid(row=0, column=1, padx=10, pady=10, sticky="n")
                 populate_weather_panel(panel2, city2, data2)
                 display_horizontal_forecast(panel2, data2["forecast"])
@@ -114,47 +109,9 @@ class WeatherApp:
             weather, forecast = fetch_weather_data(city)
             data = process_weather_and_forecast(weather, forecast)
             file_path = save_weather_to_csv(city, data)
-            messagebox.showinfo("Save CSV", f"Weather data for {city} saved successfully.\n\n{file_path}")
+            messagebox.showinfo("Save CSV", f"Weather data for {city} was saved successfully.\n\n{file_path}")
         except Exception as e:
             messagebox.showerror("Save CSV Error", f"Failed to save CSV.\n\n{e}")
-
-    def toggle_clock_panel(self):
-        if self.clock_panel and self.clock_panel.winfo_exists():
-            self.clock_panel.destroy()
-            self.clock_panel = None
-        else:
-            self.clock_panel = tk.Toplevel(self.root)
-            self.clock_panel.title("Clock Panel")
-            self.clock_canvas = tk.Canvas(self.clock_panel, width=200, height=200, bg="white")
-            self.clock_canvas.pack()
-            self.clock_label = tk.Label(self.clock_panel, font=("Arial", 14))
-            self.clock_label.pack()
-            self.update_clock()
-
-    def update_clock(self):
-        if not self.clock_canvas:
-            return
-
-        now = datetime.now()
-        self.clock_canvas.delete("all")
-        self.clock_canvas.create_oval(10, 10, 190, 190, outline="black")
-
-        hour = now.hour % 12
-        minute = now.minute
-        second = now.second
-
-        def draw_hand(length, angle_deg, color, width):
-            angle_rad = math.radians(angle_deg - 90)
-            x = 100 + length * math.cos(angle_rad)
-            y = 100 + length * math.sin(angle_rad)
-            self.clock_canvas.create_line(100, 100, x, y, fill=color, width=width)
-
-        draw_hand(60, hour * 30 + minute / 2, "black", 4)
-        draw_hand(80, minute * 6, "blue", 3)
-        draw_hand(90, second * 6, "red", 2)
-
-        self.clock_label.config(text=now.strftime("%A, %B %d, %Y %I:%M:%S %p"))
-        self.root.after(1000, self.update_clock)
 
     def show_moon_calendar(self):
         win = Toplevel(self.root)
@@ -209,30 +166,20 @@ class WeatherApp:
     def show_settings_menu(self):
         win = Toplevel(self.root)
         win.title("Settings")
-        win.geometry("350x250")
+        win.geometry("300x200")
         win.config(bg=WHITE)
 
-        def toggle_dark_mode():
-            self.settings["dark_mode"] = not self.settings["dark_mode"]
-            messagebox.showinfo("Mode Switched", f"Dark Mode is now {'enabled' if self.settings['dark_mode'] else 'disabled'}")
+        tk.Label(win, text="Forecast View Layout:", font=("Arial", 12), bg=WHITE, fg=NAVY_BLUE).pack(pady=10)
+        layout_var = tk.StringVar(value=self.settings.get("forecast_layout", "Weekly"))
+        layout_menu = ttk.Combobox(win, textvariable=layout_var, values=["Zoomed Out", "Zoomed In"], state="readonly")
+        layout_menu.pack(pady=5)
 
-        def toggle_animation():
-            self.settings["background_animation"] = not self.settings["background_animation"]
-            messagebox.showinfo("Setting Changed", f"Background animation {'enabled' if self.settings['background_animation'] else 'disabled'}")
+        def save_settings():
+            self.settings["forecast_layout"] = layout_var.get()
+            messagebox.showinfo("Saved", "Settings have been saved, Click view weather again.")
+            win.destroy()
 
-        def save_default_city():
-            self.settings["default_city"] = default_city_var.get().strip()
-            messagebox.showinfo("Saved", f"Default city set to: {self.settings['default_city']}")
-
-        tk.Label(win, text="Settings", font=("Arial", 16, "bold"), bg=WHITE, fg=NAVY_BLUE).pack(pady=10)
-
-        tk.Button(win, text="Toggle Dark Mode", command=toggle_dark_mode, bg=WHITE, fg=NAVY_BLUE).pack(pady=5)
-        tk.Button(win, text="Toggle Background Animation", command=toggle_animation, bg=WHITE, fg=NAVY_BLUE).pack(pady=5)
-
-        tk.Label(win, text="Default City:", bg=WHITE, fg=NAVY_BLUE).pack(pady=5)
-        default_city_var = tk.StringVar(value=self.settings.get("default_city", ""))
-        tk.Entry(win, textvariable=default_city_var, width=25).pack(pady=5)
-        tk.Button(win, text="Save Default City", command=save_default_city, bg=WHITE, fg=NAVY_BLUE).pack(pady=5)
+        tk.Button(win, text="Save", command=save_settings, bg=WHITE, fg=NAVY_BLUE).pack(pady=10)
 
     def setup_ui(self):
         self.background_label = tk.Label(self.root)
@@ -241,6 +188,9 @@ class WeatherApp:
         self.input_frame = tk.Frame(self.root, bg=WHITE, bd=2, relief="groove")
         self.input_frame.pack(pady=10)
 
+        style = ttk.Style()
+        style.configure("TCombobox", foreground=NAVY_BLUE, fieldbackground=WHITE, background=WHITE)
+
         self.view_mode = tk.StringVar(value="Select an Option")
         mode_menu = ttk.Combobox(
             self.input_frame,
@@ -248,8 +198,7 @@ class WeatherApp:
             values=["Select an Option", "One City", "Two Cities"],
             width=15,
             state="readonly",
-            foreground=NAVY_BLUE,
-            background=WHITE,
+            style="TCombobox"
         )
         mode_menu.grid(row=0, column=0, padx=5)
         mode_menu.bind("<<ComboboxSelected>>", self.toggle_city_inputs)
@@ -266,10 +215,9 @@ class WeatherApp:
 
         tk.Button(self.input_frame, text="View Weather", command=self.view_weather, **button_style).grid(row=0, column=3, padx=5)
         tk.Button(self.input_frame, text="🌙 Moon Calendar", command=self.show_moon_calendar, **button_style).grid(row=0, column=4, padx=5)
-        tk.Button(self.input_frame, text="♏ Horoscope", command=self.show_horoscope_popup, **button_style).grid(row=0, column=5, padx=5)
-        tk.Button(self.input_frame, text="🕒 Show Clock", command=self.toggle_clock_panel, **button_style).grid(row=0, column=6, padx=5)
-        tk.Button(self.input_frame, text="Save CSV", command=self.save_to_csv, **button_style).grid(row=0, column=7, padx=5)
-        tk.Button(self.input_frame, text="⚙️ Settings", command=self.show_settings_menu, **button_style).grid(row=0, column=8, padx=5)
+        tk.Button(self.input_frame, text="♟ Horoscope", command=self.show_horoscope_popup, **button_style).grid(row=0, column=5, padx=5)
+        tk.Button(self.input_frame, text="Save CSV", command=self.save_to_csv, **button_style).grid(row=0, column=6, padx=5)
+        tk.Button(self.input_frame, text="⚙️ Settings", command=self.show_settings_menu, **button_style).grid(row=0, column=7, padx=5)
 
         self.result_frame = tk.Frame(self.root, bg="lightblue", bd=2, relief="groove")
         self.result_frame.pack(fill="both", expand=True)
