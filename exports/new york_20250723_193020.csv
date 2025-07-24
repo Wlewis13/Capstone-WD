@@ -1,0 +1,44 @@
+City,Temperature (F),Humidity (%),Condition,Sunrise,Sunset
+new york,77.45,57,Few clouds,05:44 AM,08:20 PM
+
+Date,Time,Temp (F),Condition
+2025-07-24,00:00:00,77.45,few clouds
+2025-07-24,03:00:00,76.01,scattered clouds
+2025-07-24,06:00:00,71.17,broken clouds
+2025-07-24,09:00:00,66.16,scattered clouds
+2025-07-24,12:00:00,73.36,broken clouds
+2025-07-24,15:00:00,81.59,broken clouds
+2025-07-24,18:00:00,84.4,scattered clouds
+2025-07-24,21:00:00,82.49,scattered clouds
+2025-07-25,00:00:00,83.34,scattered clouds
+2025-07-25,03:00:00,78.78,few clouds
+2025-07-25,06:00:00,76.64,clear sky
+2025-07-25,09:00:00,75.16,clear sky
+2025-07-25,12:00:00,78.13,clear sky
+2025-07-25,15:00:00,88.77,few clouds
+2025-07-25,18:00:00,95.99,broken clouds
+2025-07-25,21:00:00,88.5,light rain
+2025-07-26,00:00:00,87.1,overcast clouds
+2025-07-26,03:00:00,82.51,broken clouds
+2025-07-26,06:00:00,80.2,broken clouds
+2025-07-26,09:00:00,77.54,overcast clouds
+2025-07-26,12:00:00,78.84,overcast clouds
+2025-07-26,15:00:00,85.44,broken clouds
+2025-07-26,18:00:00,86.86,broken clouds
+2025-07-26,21:00:00,82.33,broken clouds
+2025-07-27,00:00:00,77.83,overcast clouds
+2025-07-27,03:00:00,76.75,broken clouds
+2025-07-27,06:00:00,76.41,broken clouds
+2025-07-27,09:00:00,74.88,light rain
+2025-07-27,12:00:00,75.67,light rain
+2025-07-27,15:00:00,84.97,light rain
+2025-07-27,18:00:00,93.02,scattered clouds
+2025-07-27,21:00:00,92.66,broken clouds
+2025-07-28,00:00:00,87.35,broken clouds
+2025-07-28,03:00:00,81.25,clear sky
+2025-07-28,06:00:00,76.19,clear sky
+2025-07-28,09:00:00,74.05,clear sky
+2025-07-28,12:00:00,76.12,clear sky
+2025-07-28,15:00:00,85.71,clear sky
+2025-07-28,18:00:00,92.23,scattered clouds
+2025-07-28,21:00:00,91.63,scattered clouds
