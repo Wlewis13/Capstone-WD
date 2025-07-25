@@ -170,7 +170,7 @@ def show_forecast_graph(parent, daily_data):
     canvas.get_tk_widget().pack(pady=10)
     return canvas
 
-def display_horizontal_forecast(panel, forecast_data):
+def display_horizontal_forecast(panel, forecast_data, bordered=False):
     frame = tk.Frame(panel, bg="white")
     frame.pack(pady=10)
 
@@ -184,7 +184,11 @@ def display_horizontal_forecast(panel, forecast_data):
         icon_img = fetch_icon(icon_url, resize=(40, 40))
         bg = get_day_background(desc)
 
-        day_frame = tk.Frame(frame, bg=bg)
+        if bordered:
+            day_frame = tk.Frame(frame, bg=bg, bd=2, relief="groove", padx=5, pady=5)
+        else:
+            day_frame = tk.Frame(frame, bg=bg, padx=5, pady=5)
+
         day_frame.pack(side="left", padx=5)
 
         tk.Label(day_frame, text=date[-5:], font=("Arial", 10), bg=bg, fg="navy").pack()

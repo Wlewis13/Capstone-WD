@@ -26,7 +26,7 @@ ZODIAC_HOROSCOPES = {
     "Taurus": "Burger!!!, Cheese on Mines.",
     "Gemini": "You are an undiagnosed Bi-polar Case - Seek Help!.",
     "Cancer": "You are a Crab, a Crab!!! of all things a Crab, Go blow some Bubbles.",
-    "Leo": "You are just a house Cat that had steriods in their milk, Relax! go Meowww or somthing.",
+    "Leo": "You are just a house Cat that had steriods in their milk, Relax go Meow & Catch a Mice.",
     "Virgo": "The Virgin, Righttttt: the lie detector determined that was a LIE!.",
     "Libra": "You are going to need alot of Meds before anyone can consider you Balanced.",
     "Scorpio": "You are a Shrimp with a stinger, that has a paralzying taste, go Detox.",
@@ -39,7 +39,7 @@ ZODIAC_HOROSCOPES = {
 class WeatherApp:
     def __init__(self):
         self.root = tk.Tk()
-        self.root.title("Weather Dashboard by Wendell Lewis")
+        self.root.title("Weather Dashboard by Wendell Lewis, First of His Name")
         self.root.geometry("1200x700")
         self.root.resizable(False, False)
 
@@ -84,7 +84,7 @@ class WeatherApp:
                 panel = tk.LabelFrame(self.result_frame, bd=2, relief="ridge", width=550, bg="#ffffff", text=f"{city1} Forecast", font=("Arial", 10, "bold"))
                 panel.grid(row=0, column=0, padx=10, pady=10, sticky="n")
                 populate_weather_panel(panel, city1, data1)
-                display_horizontal_forecast(panel, data1["forecast"])
+                display_horizontal_forecast(panel, data1["forecast"], bordered=True)
 
             if self.view_mode.get() == "Two Cities":
                 if not city2:
@@ -96,7 +96,7 @@ class WeatherApp:
                 panel2 = tk.LabelFrame(self.result_frame, bd=2, relief="ridge", width=550, bg="#ffffff", text=f"{city2} Forecast", font=("Arial", 10, "bold"))
                 panel2.grid(row=0, column=1, padx=10, pady=10, sticky="n")
                 populate_weather_panel(panel2, city2, data2)
-                display_horizontal_forecast(panel2, data2["forecast"])
+                display_horizontal_forecast(panel2, data2["forecast"], bordered=True)
         except Exception as e:
             messagebox.showerror("Error", f"Failed to fetch weather data. Please try again.\n\n{e}")
 
