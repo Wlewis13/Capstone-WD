@@ -46,3 +46,13 @@ def play_gif(root, gif_file):
         # If an error occurs (e.g., file not found), clear the background image if it exists
         if hasattr(root, "background_label"):
             root.background_label.configure(image="")
+
+            
+# ---------------- SUMMARY ----------------
+# This module provides animated weather-themed backgrounds for the Tkinter GUI window.
+# - The `set_background_theme()` function selects a background GIF file based on keywords like "rain", "snow", etc.
+# - The `play_gif()` function loads and animates the chosen GIF in the root window using a Tkinter Label.
+# - Background animations enhance the app visually to match the current weather condition.
+# - If a background label isn't already present, it creates one and loops through the GIF frames.
+# - GIF frames are updated every 100 milliseconds to simulate animation.
+# This feature improves the user interface by making the weather dashboard visually immersive.

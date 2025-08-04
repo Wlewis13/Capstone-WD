@@ -1,32 +1,37 @@
-import tkinter as tk
+import tkinter as tk  # Import Tkinter for GUI components
 from core.utils import fetch_icon  # Utility to fetch and resize weather icons
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg  # Embed matplotlib in Tkinter
-import matplotlib.pyplot as plt
-from matplotlib.offsetbox import OffsetImage, AnnotationBbox
-from PIL import Image, ImageTk
-import requests
-from io import BytesIO
+import matplotlib.pyplot as plt  # For plotting graphs
+from matplotlib.offsetbox import OffsetImage, AnnotationBbox  # For placing weather icons on graphs
+from PIL import Image, ImageTk  # Image handling for icons and backgrounds
+import requests  # Used to download weather icon images from URLs
+from io import BytesIO  # Allows working with image data in memory
+
 
 def get_day_background(desc):
+    """Return a background color based on weather description."""
     desc = desc.lower()
     if "rain" in desc:
-        return "#add8e6"
+        return "#add8e6"  # Light blue
     elif "cloud" in desc:
-        return "#d3d3d3"
+        return "#d3d3d3"  # Gray
     elif "snow" in desc:
-        return "#f0f8ff"
+        return "#f0f8ff"  # Icy blue
     elif "storm" in desc:
-        return "#778899"
+        return "#778899"  # Slate gray
     elif "sun" in desc or "clear" in desc:
-        return "#fffacd"
+        return "#fffacd"  # Light yellow
     else:
-        return "#ffffff"
+        return "#ffffff"  # Default white
+
 
 def populate_weather_panel(panel, city, data):
+    """Displays the current weather information in a styled panel."""
     bg_color = get_day_background(data['description'])
     panel.configure(bg=bg_color)
 
     tk.Label(panel, text=f"{city}", font=("Arial", 16, "bold"), bg=bg_color, fg="navy").pack(pady=5)
+
     icon_url = f"http://openweathermap.org/img/wn/{data['icon']}@2x.png"
     icon_img = fetch_icon(icon_url)
     if icon_img:
@@ -34,7 +39,7 @@ def populate_weather_panel(panel, city, data):
         lbl.image = icon_img
         lbl.pack()
 
-    tk.Label(panel, text=f"Temperature: {data['temperature']}°F", font=("Arial", 12), bg=bg_color, fg="navy").pack()
+    tk.Label(panel, text=f"Temperature: {data['temperature']}\u00b0F", font=("Arial", 12), bg=bg_color, fg="navy").pack()
     tk.Label(panel, text=f"Condition: {data['description']}", font=("Arial", 12), bg=bg_color, fg="navy").pack()
     tk.Label(panel, text=f"Humidity: {data['humidity']}%", font=("Arial", 12), bg=bg_color, fg="navy").pack()
     tk.Label(panel, text=f"Sunrise: {data['sunrise']}", font=("Arial", 12), bg=bg_color, fg="orange").pack()
@@ -42,7 +47,9 @@ def populate_weather_panel(panel, city, data):
 
     display_allergen_icons(panel, bg_color)
 
+
 def display_allergen_icons(panel, bg_color="#ffffff"):
+    """Display allergen icons like pollen and dust."""
     allergens = [("Pollen", "assets/icons/pollen.png"), ("Dust", "assets/icons/dust.png")]
     row = tk.Frame(panel, bg=bg_color)
     row.pack(pady=5)
@@ -57,7 +64,9 @@ def display_allergen_icons(panel, bg_color="#ffffff"):
         except:
             tk.Label(row, text=f"{name}: Low", fg="green", bg=bg_color).pack(side="left", padx=10)
 
+
 def display_weekly_forecast(parent_frame, forecast_data):
+    """Display a 5-day scrollable forecast panel with toggleable temperature graph."""
     outer_frame = tk.Frame(parent_frame, bg="white")
     outer_frame.pack(fill="both", expand=True, pady=10)
 
@@ -79,7 +88,6 @@ def display_weekly_forecast(parent_frame, forecast_data):
 
     day_frame = tk.Frame(scrollable_frame, bg="white")
     day_frame.pack(anchor="center")
-
     daily_data = []
 
     for i in range(0, 40, 8):
@@ -103,7 +111,7 @@ def display_weekly_forecast(parent_frame, forecast_data):
             lbl = tk.Label(panel, image=icon_img, bg=bg)
             lbl.image = icon_img
             lbl.pack()
-        tk.Label(panel, text=f"{temp}°F", font=("Arial", 10), bg=bg, fg="navy").pack()
+        tk.Label(panel, text=f"{temp}\u00b0F", font=("Arial", 10), bg=bg, fg="navy").pack()
         tk.Label(panel, text=desc, font=("Arial", 9), bg=bg, fg="navy", wraplength=100).pack()
 
     graph_frame = tk.Frame(scrollable_frame, bg="white")
@@ -126,14 +134,15 @@ def display_weekly_forecast(parent_frame, forecast_data):
     toggle_btn = tk.Button(graph_frame, text="Show Forecast Graph", command=toggle_graph)
     toggle_btn.pack()
 
+
 def show_forecast_graph(parent, daily_data):
+    """Plot and display temperature trends using matplotlib with icons."""
     dates = [d[0] for d in daily_data]
     temps = [d[1] for d in daily_data]
     icon_urls = [d[2] for d in daily_data]
     conditions = [d[3] for d in daily_data]
 
     fig, ax = plt.subplots(figsize=(6, 3))
-
     colors = []
     for cond in conditions:
         if "rain" in cond:
@@ -156,11 +165,11 @@ def show_forecast_graph(parent, daily_data):
             ax.add_artist(ab)
         except:
             pass
-        ax.text(date, temp - 2, f"{temp}°F", ha="center", fontsize=8, color="navy")
+        ax.text(date, temp - 2, f"{temp}\u00b0F", ha="center", fontsize=8, color="navy")
 
     ax.set_title("5-Day Temperature Forecast", fontsize=12, color="navy")
     ax.set_xlabel("Date", color="navy")
-    ax.set_ylabel("Temp (°F)", color="navy")
+    ax.set_ylabel("Temp (\u00b0F)", color="navy")
     ax.grid(True)
     ax.set_ylim(min(temps) - 10, max(temps) + 15)
     ax.tick_params(colors='navy')
@@ -170,7 +179,9 @@ def show_forecast_graph(parent, daily_data):
     canvas.get_tk_widget().pack(pady=10)
     return canvas
 
+
 def display_horizontal_forecast(panel, forecast_data, bordered=False):
+    """Display small horizontal forecast boxes for 5 upcoming days."""
     frame = tk.Frame(panel, bg="white")
     frame.pack(pady=10)
 
@@ -190,10 +201,23 @@ def display_horizontal_forecast(panel, forecast_data, bordered=False):
             day_frame = tk.Frame(frame, bg=bg, padx=5, pady=5)
 
         day_frame.pack(side="left", padx=5)
-
         tk.Label(day_frame, text=date[-5:], font=("Arial", 10), bg=bg, fg="navy").pack()
         if icon_img:
             lbl = tk.Label(day_frame, image=icon_img, bg=bg)
             lbl.image = icon_img
             lbl.pack()
-        tk.Label(day_frame, text=f"{temp}°F", font=("Arial", 10), bg=bg, fg="navy").pack()
+        tk.Label(day_frame, text=f"{temp}\u00b0F", font=("Arial", 10), bg=bg, fg="navy").pack()
+
+
+# ----------------------------------------------------------------------
+# Summary:
+# ----------------------------------------------------------------------
+# This module provides Tkinter-based visual components for displaying:
+# 1. Current weather data with icons, sunrise/sunset, humidity, and temperature.
+# 2. Pollen and dust allergen indicators via local icons.
+# 3. A 5-day forecast panel showing date, icon, condition, and temperature.
+# 4. An interactive line graph of temperature trends with weather icons.
+# 5. A compact horizontal forecast for quick visual reference.
+# 
+# It uses matplotlib to graph temperatures, Pillow (PIL) for image handling,
+# and a fetch_icon utility for loading and resizing weather icons from URLs.

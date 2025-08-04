@@ -1,26 +1,30 @@
 import tkinter as tk
-from tkinter import ttk, messagebox, Toplevel
-from PIL import Image, ImageTk, ImageSequence
-from datetime import datetime
-import threading
-import math
-import calendar
+from tkinter import ttk, messagebox, Toplevel  # Importing Tkinter UI components
+from PIL import Image, ImageTk, ImageSequence  # Image handling for icons and animation
+from datetime import datetime  # Date/time functionality
+import threading  # For running tasks in background
+import math, calendar  # Math and calendar support
 
-from core.api_client import fetch_weather_data
-from core.weather_data import process_weather_and_forecast
-from core.file_export import save_weather_to_csv
+# Importing custom modules
+from core.api_client import fetch_weather_data  # Fetch weather and forecast data from OpenWeatherMap
+from core.weather_data import process_weather_and_forecast  # Process and format API weather response
+from core.file_export import save_weather_to_csv  # Export weather data to a CSV file
+
+# Importing GUI helper functions and components
 from gui.components import (
-    populate_weather_panel,
-    display_weekly_forecast,
-    display_horizontal_forecast
+    populate_weather_panel,  # Display weather info in panel
+    display_weekly_forecast,  # Show 5-day forecast in scrollable view
+    display_horizontal_forecast  # Alternative horizontal layout for forecast
 )
-from gui.themes import set_background_theme
+from gui.themes import set_background_theme  # Set animated weather backgrounds
 
+# Constants for styling
 NAVY_BLUE = "#000080"
 WHITE = "#ffffff"
 DARK_BG = "#1a1a1a"
 LIGHT_BG = WHITE
 
+# Custom horoscope data for fun feature
 ZODIAC_HOROSCOPES = {
     "Aries": "It's National Curry Goat Day, make yourself Invisible.",
     "Taurus": "Burger!!!, Cheese on Mines.",
@@ -38,6 +42,7 @@ ZODIAC_HOROSCOPES = {
 
 class WeatherApp:
     def __init__(self):
+        # Initialize main application window
         self.root = tk.Tk()
         self.root.title("Weather Dashboard by Wendell Lewis, First of His Name")
         self.root.geometry("1200x700")
@@ -45,12 +50,13 @@ class WeatherApp:
 
         self.frames = []
         self.settings = {
-            "forecast_layout": "Zoomed Out"
+            "forecast_layout": "Zoomed Out"  # Default layout setting
         }
 
-        self.setup_ui()
+        self.setup_ui()  # Set up all UI components
 
     def toggle_city_inputs(self, event=None):
+        # Toggle second city input visibility based on view mode
         if self.view_mode.get() == "Two Cities":
             self.city2_entry.grid()
         else:
@@ -58,6 +64,9 @@ class WeatherApp:
             self.city2_entry.delete(0, tk.END)
 
     def view_weather(self):
+        # Fetch and display weather data for selected cities
+
+        # Clear previous results
         for widget in self.result_frame.winfo_children():
             widget.destroy()
 
@@ -69,27 +78,35 @@ class WeatherApp:
             return
 
         try:
+            # Fetch data for City 1
             weather1, forecast1 = fetch_weather_data(city1)
             data1 = process_weather_and_forecast(weather1, forecast1)
 
             if self.view_mode.get() == "One City":
+                # Create panel for single-city view
                 panel = tk.Frame(self.result_frame, bd=2, relief="groove", width=1150, bg="#ffffff")
                 panel.pack(padx=10, pady=10, fill="x")
                 populate_weather_panel(panel, city1, data1)
+
+                # Layout options
                 if self.settings["forecast_layout"] == "Zoomed In":
                     display_horizontal_forecast(panel, data1["forecast"])
                 else:
                     display_weekly_forecast(self.result_frame, data1["forecast"])
             else:
+                # Two-city view layout panel for City 1
                 panel = tk.LabelFrame(self.result_frame, bd=2, relief="ridge", width=550, bg="#ffffff", text=f"{city1} Forecast", font=("Arial", 10, "bold"))
                 panel.grid(row=0, column=0, padx=10, pady=10, sticky="n")
                 populate_weather_panel(panel, city1, data1)
                 display_horizontal_forecast(panel, data1["forecast"], bordered=True)
 
             if self.view_mode.get() == "Two Cities":
+                # Validate City 2 input
                 if not city2:
                     messagebox.showwarning("Input Error", "Please enter the second city.")
                     return
+
+                # Fetch data for City 2
                 weather2, forecast2 = fetch_weather_data(city2)
                 data2 = process_weather_and_forecast(weather2, forecast2)
 
@@ -101,6 +118,7 @@ class WeatherApp:
             messagebox.showerror("Error", f"Failed to fetch weather data. Please try again.\n\n{e}")
 
     def save_to_csv(self):
+        # Save weather data to CSV file
         city = self.city1_entry.get().strip()
         if not city:
             messagebox.showwarning("Save CSV", "Please enter a city and view its weather before saving.")
@@ -114,6 +132,7 @@ class WeatherApp:
             messagebox.showerror("Save CSV Error", f"Failed to save CSV.\n\n{e}")
 
     def show_moon_calendar(self):
+        # Create Moon Calendar popup window
         win = Toplevel(self.root)
         win.title("Moon Calendar")
         win.geometry("400x400")
@@ -124,6 +143,7 @@ class WeatherApp:
 
         tk.Label(win, text=f"{calendar.month_name[month]} {year}", font=("Arial", 16, "bold"), fg=NAVY_BLUE, bg=WHITE).pack(pady=10)
 
+        # Scrollable container for moon phases
         frame = tk.Frame(win, bg=WHITE)
         frame.pack(fill="both", expand=True)
 
@@ -138,6 +158,7 @@ class WeatherApp:
         canvas.pack(side="left", fill="both", expand=True)
         scrollbar.pack(side="right", fill="y")
 
+        # Calculate moon phase using lunation algorithm
         def moon_phase(date):
             diff = date - datetime(2001, 1, 1)
             days = diff.days + (diff.seconds / 86400)
@@ -155,6 +176,7 @@ class WeatherApp:
             ]
             return phases[phase_index]
 
+        # Display important moon phases
         for day in range(1, calendar.monthrange(year, month)[1] + 1):
             date_obj = datetime(year, month, day)
             phase_name, phase_icon = moon_phase(date_obj)
@@ -164,6 +186,7 @@ class WeatherApp:
                 label.pack(fill="x", pady=2)
 
     def show_settings_menu(self):
+        # Show settings window
         win = Toplevel(self.root)
         win.title("Settings")
         win.geometry("300x200")
@@ -174,6 +197,7 @@ class WeatherApp:
         layout_menu = ttk.Combobox(win, textvariable=layout_var, values=["Zoomed Out", "Zoomed In"], state="readonly")
         layout_menu.pack(pady=5)
 
+        # Save user layout preference
         def save_settings():
             self.settings["forecast_layout"] = layout_var.get()
             messagebox.showinfo("Saved", "Settings have been saved, Click view weather again.")
@@ -182,12 +206,15 @@ class WeatherApp:
         tk.Button(win, text="Save", command=save_settings, bg=WHITE, fg=NAVY_BLUE).pack(pady=10)
 
     def setup_ui(self):
+        # Set up main GUI components and layout
         self.background_label = tk.Label(self.root)
         self.background_label.place(x=0, y=0, relwidth=1, relheight=1)
 
+        # Top input frame
         self.input_frame = tk.Frame(self.root, bg=WHITE, bd=2, relief="groove")
         self.input_frame.pack(pady=10)
 
+        # Combo box styling
         style = ttk.Style()
         style.configure("TCombobox", foreground=NAVY_BLUE, fieldbackground=WHITE, background=WHITE)
 
@@ -203,9 +230,11 @@ class WeatherApp:
         mode_menu.grid(row=0, column=0, padx=5)
         mode_menu.bind("<<ComboboxSelected>>", self.toggle_city_inputs)
 
+        # Entry and button style
         entry_style = {"bg": WHITE, "fg": NAVY_BLUE, "insertbackground": NAVY_BLUE}
         button_style = {"bg": WHITE, "fg": NAVY_BLUE, "activebackground": "#e6e6ff", "activeforeground": NAVY_BLUE, "relief": "raised"}
 
+        # Input fields for cities
         self.city1_entry = tk.Entry(self.input_frame, width=20, **entry_style)
         self.city1_entry.grid(row=0, column=1, padx=5)
 
@@ -213,16 +242,19 @@ class WeatherApp:
         self.city2_entry.grid(row=0, column=2, padx=5)
         self.city2_entry.grid_remove()
 
+        # Action buttons
         tk.Button(self.input_frame, text="View Weather", command=self.view_weather, **button_style).grid(row=0, column=3, padx=5)
         tk.Button(self.input_frame, text="🌙 Moon Calendar", command=self.show_moon_calendar, **button_style).grid(row=0, column=4, padx=5)
         tk.Button(self.input_frame, text="♟ Horoscope", command=self.show_horoscope_popup, **button_style).grid(row=0, column=5, padx=5)
         tk.Button(self.input_frame, text="Save CSV", command=self.save_to_csv, **button_style).grid(row=0, column=6, padx=5)
         tk.Button(self.input_frame, text="⚙️ Settings", command=self.show_settings_menu, **button_style).grid(row=0, column=7, padx=5)
 
+        # Frame to show results below input
         self.result_frame = tk.Frame(self.root, bg="lightblue", bd=2, relief="groove")
         self.result_frame.pack(fill="both", expand=True)
 
     def show_horoscope_popup(self):
+        # Show zodiac sign selector and horoscope
         win = Toplevel(self.root)
         win.title("Today's Horoscope")
         win.geometry("400x250")
@@ -246,4 +278,17 @@ class WeatherApp:
         tk.Button(win, text="Get Horoscope", command=show_reading, bg=WHITE, fg=NAVY_BLUE).pack(pady=5)
 
     def run(self):
+        # Start main event loop
         self.root.mainloop()
+
+# ---------------- SUMMARY ----------------
+# This code defines the WeatherApp class which is a full-featured Tkinter-based GUI application.
+# It allows users to:
+# - View weather data for one or two cities
+# - Toggle between detailed and overview forecast layouts
+# - Save weather reports to CSV files
+# - Display a moon calendar with moon phases
+# - View humorous horoscope messages based on zodiac sign
+# The app uses modular components from the core and gui packages, and integrates animated backgrounds, graph plotting, and weather icon rendering.
+# Users interact through intuitive dropdowns, entry fields, and button panels, with all responses shown inside the main application window.
+# The app fetches real-time data using OpenWeatherMap API and processes results into readable, interactive panels.
