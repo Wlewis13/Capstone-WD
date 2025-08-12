@@ -4,6 +4,8 @@ from PIL import Image, ImageTk, ImageSequence  # Image handling for icons and an
 from datetime import datetime  # Date/time functionality
 import threading  # For running tasks in background
 import math, calendar  # Math and calendar support
+import os
+import csv
 
 # Importing custom modules
 from core.api_client import fetch_weather_data  # Fetch weather and forecast data from OpenWeatherMap
@@ -52,6 +54,9 @@ class WeatherApp:
         self.settings = {
             "forecast_layout": "Zoomed Out"  # Default layout setting
         }
+        
+        # To hold the current weather data (for tea recommendations)
+        self.current_weather_data = None
 
         self.setup_ui()  # Set up all UI components
 
@@ -81,6 +86,14 @@ class WeatherApp:
             # Fetch data for City 1
             weather1, forecast1 = fetch_weather_data(city1)
             data1 = process_weather_and_forecast(weather1, forecast1)
+
+            # Save current weather type for tea recommendations
+            if "current" in data1 and "weather" in data1["current"] and len(data1["current"]["weather"]) > 0:
+                weather_type = data1["current"]["weather"][0].get("main", "")
+            else:
+                weather_type = ""
+
+            self.current_weather_data = {"weather_type": weather_type}
 
             if self.view_mode.get() == "One City":
                 # Create panel for single-city view
@@ -205,6 +218,66 @@ class WeatherApp:
 
         tk.Button(win, text="Save", command=save_settings, bg=WHITE, fg=NAVY_BLUE).pack(pady=10)
 
+    def show_tea_recommendation(self):
+        csv_path = os.path.join("assets", "tea_recommendations.csv")
+
+        # Check read permission for the CSV file
+        if not os.access(csv_path, os.R_OK):
+            messagebox.showerror("Tea Recommendation", f"No read access to {csv_path}. Please check the file permissions.")
+            return
+
+        try:
+            with open(csv_path, "r", encoding="utf-8") as file:
+                reader = csv.DictReader(file)
+                tea_data = list(reader)
+        except Exception as e:
+            messagebox.showerror("Tea Recommendation", f"Error reading tea recommendations CSV:\n{e}")
+            return
+
+        # Get current weather_type from stored data
+        if not self.current_weather_data or 'weather_type' not in self.current_weather_data:
+            messagebox.showerror("Tea Recommendation", "Current weather data not found. Please view weather first.")
+            return
+
+        weather_type = self.current_weather_data['weather_type']
+
+        # Filter tea recommendations for current weather
+        matching_teas = [row for row in tea_data if row['weather_type'].lower() == weather_type.lower()]
+
+        if not matching_teas:
+            messagebox.showinfo("Tea Recommendation", f"No tea recommendations found for weather type: {weather_type}")
+            return
+
+        # Create popup window for tea recommendations
+        win = Toplevel(self.root)
+        win.title(f"Tea Recommendations for {weather_type} Weather")
+        win.geometry("400x300")
+        win.config(bg=WHITE)
+
+        tk.Label(win, text=f"Tea Recommendations for {weather_type} Weather", font=("Arial", 14, "bold"), fg=NAVY_BLUE, bg=WHITE).pack(pady=10)
+
+        # Scrollable frame for recommendations
+        frame = tk.Frame(win, bg=WHITE)
+        frame.pack(fill="both", expand=True)
+
+        canvas = tk.Canvas(frame, bg=WHITE, highlightthickness=0)
+        scrollbar = tk.Scrollbar(frame, orient="vertical", command=canvas.yview)
+        scrollable_frame = tk.Frame(canvas, bg=WHITE)
+
+        scrollable_frame.bind("<Configure>", lambda e: canvas.configure(scrollregion=canvas.bbox("all")))
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+
+        # Display each tea recommendation
+        for tea in matching_teas:
+            tea_name = tea.get("tea_name", "Unknown Tea")
+            description = tea.get("description", "")
+            label = tk.Label(scrollable_frame, text=f"{tea_name}: {description}", font=("Arial", 12), fg=NAVY_BLUE, bg=WHITE, wraplength=360, justify="left", anchor="w")
+            label.pack(fill="x", pady=5, padx=10)
+
     def setup_ui(self):
         # Set up main GUI components and layout
         self.background_label = tk.Label(self.root)
@@ -247,7 +320,8 @@ class WeatherApp:
         tk.Button(self.input_frame, text="🌙 Moon Calendar", command=self.show_moon_calendar, **button_style).grid(row=0, column=4, padx=5)
         tk.Button(self.input_frame, text="♟ Horoscope", command=self.show_horoscope_popup, **button_style).grid(row=0, column=5, padx=5)
         tk.Button(self.input_frame, text="Save CSV", command=self.save_to_csv, **button_style).grid(row=0, column=6, padx=5)
-        tk.Button(self.input_frame, text="⚙️ Settings", command=self.show_settings_menu, **button_style).grid(row=0, column=7, padx=5)
+        tk.Button(self.input_frame, text="🍵 Tea Recommendation", command=self.show_tea_recommendation, **button_style).grid(row=0, column=7, padx=5)  # New button
+        tk.Button(self.input_frame, text="⚙️ Settings", command=self.show_settings_menu, **button_style).grid(row=0, column=8, padx=5)
 
         # Frame to show results below input
         self.result_frame = tk.Frame(self.root, bg="lightblue", bd=2, relief="groove")
@@ -281,14 +355,7 @@ class WeatherApp:
         # Start main event loop
         self.root.mainloop()
 
-# ---------------- SUMMARY ----------------
-# This code defines the WeatherApp class which is a full-featured Tkinter-based GUI application.
-# It allows users to:
-# - View weather data for one or two cities
-# - Toggle between detailed and overview forecast layouts
-# - Save weather reports to CSV files
-# - Display a moon calendar with moon phases
-# - View humorous horoscope messages based on zodiac sign
-# The app uses modular components from the core and gui packages, and integrates animated backgrounds, graph plotting, and weather icon rendering.
-# Users interact through intuitive dropdowns, entry fields, and button panels, with all responses shown inside the main application window.
-# The app fetches real-time data using OpenWeatherMap API and processes results into readable, interactive panels.
+# To run the app, instantiate and run:
+# if __name__ == "__main__":
+#     app = WeatherApp()
+#     app.run()
